@@ -223,8 +223,9 @@
 
           fetch(SCRIPT_URL + "?action=submitRSVP", {
             method: 'POST',
-            mode: 'cors',
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                'Content-Type': 'text/plain' // avoids triggering CORS preflight
+            },
             body: JSON.stringify(formData)
           })
             .then(res => res.json())
