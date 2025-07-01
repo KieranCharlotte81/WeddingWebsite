@@ -128,9 +128,18 @@
       </form>
     </div>
 
-    <!-- Everything before remains unchanged -->
 <script>
   window.onload = function () {
+    const ALLOWED_HOSTNAMES = ["kierancharlotte2026.co.uk", "www.kierancharlotte2026.co.uk"];
+    if (!ALLOWED_HOSTNAMES.includes(window.location.hostname)) {
+      document.body.innerHTML = `
+        <div class="container">
+          <h2>Access Denied 🔒</h2>
+          <p>This form is only accessible from <strong>${ALLOWED_HOSTNAMES.join(" or ")}</strong>.</p>
+        </div>`;
+      return;
+    }
+
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz6wWTArQPYZ7MWKK31SrzOTGU-t9wdF8UHfRIcFP6QH2CRxCiAN6ePsEWNV7Itep-_Vw/exec";
 
     let currentPasscode = "";
@@ -222,13 +231,12 @@
         responses: responses
       };
 
-      // Fix: send action and payload as URL-encoded to support e.parameter.action in Apps Script
       const body = `action=submitRSVP&payload=${encodeURIComponent(JSON.stringify(payload))}`;
 
       fetch(SCRIPT_URL, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded' // ✅ CORS-friendly and Apps Script compatible
+          'Content-Type': 'application/x-www-form-urlencoded'
         },
         body: body
       })
@@ -257,6 +265,5 @@
     }
   };
 </script>
-
   </body>
 </html>
