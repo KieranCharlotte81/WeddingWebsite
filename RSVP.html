@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Allura&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Allura&family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'EB Garamond', serif;
+        background-image: url("https://i.imgur.com/Agfpf4Z.jpeg");
+        /* background-size: cover; */
+        background-size: 1000px auto;
+        background-repeat: repeat;
+        background-color: #f8f9fa;
+        padding: 30px;
+        color: #333;
+        text-align: center;
+      }
+      #arrival-message {
+        font-size: 18px;
+        color: #555;
+        text-align: center;
+        margin-top: 10px;
+        margin-bottom: 20px;
+      }
+      .container {
+        background: rgba(255, 255, 255);
+        opacity: 0.8;
+        max-width: 700px;
+        margin: auto;
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      }
+      label {
+        font-weight: 500;
+        display: block;
+        margin-bottom: 6px;
+      }
+      input[type="text"],
+      input[type="radio"] {
+        margin-right: 10px;
+      }
+      button {
+        background-color: #97af8e;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+        margin-top: 20px;
+      }
+      button:hover {
+        background-color: #a1c488;
+      }
+      .guest-form {
+        background-color: #f1f3f5;
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #dfe2e6;
+      }
+      .guest-header {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      .response-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 15px;
+      }
+      .radio-group {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      .diet-input {
+        flex: 1;
+        min-width: 200px;
+      }
+      input[type="text"].dietary {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        box-sizing: border-box;
+        font-size: 14px;
+      }
+      #passcode-error {
+        color: #d9534f;
+        font-weight: 500;
+        margin-top: 10px;
+      }
+      @media screen and (max-width: 600px) {
+        .response-row {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <p style="font-size: 50px; font-family: 'Allura', serif; margin-bottom: 10px">You're Invited! 🎉</p>
+      <p style="font-size: 25px">RSVP for Kieran and Charlotte's Wedding!</p>
+      <p style="font-size: 20px"><i>Fairlawns Hotel & Spa   -   Friday 22nd May 2026</i></p>
+      <p id="arrival-message"></p>
+      <div id="passcode-section">
+        <label for="passcode">Enter your invite passcode:</label>
+        <input type="text" id="passcode" placeholder="e.g., 1234" required>
+        <button onclick="checkPasscode()">Continue</button>
+        <p id="passcode-error"></p>
+        <p id="loading-message-passcode" style="color: #555; font-style: italic;"></p>
+      </div>
+      <form id="rsvp-form" style="display:none;" onsubmit="submitRSVP(event)">
+        <div id="guest-forms"></div>
+        <button type="submit">Submit RSVP</button>
+        <p id="loading-message-rsvp" style="color: #555; font-style: italic;"></p>
+      </form>
+    </div>
+    <script>
+      const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz6wWTArQPYZ7MWKK31SrzOTGU-t9wdF8UHfRIcFP6QH2CRxCiAN6ePsEWNV7Itep-_Vw/exec";
+      function checkPasscode() {
+        const passcode = document.getElementById('passcode').value.trim();
+        document.getElementById('passcode-error').textContent = "";
+        if (!passcode) {
+          document.getElementById('passcode-error').textContent = "Please enter a passcode.";
+          return;
+        }
+        document.getElementById('loading-message-passcode').textContent = "Please wait...";
+        fetch(SCRIPT_URL + "?action=validatePasscode", {
+          method: 'POST',
+          body: JSON.stringify({ passcode: passcode }),
+          headers: { "Content-Type": "application/json" }
+        })
+        .then(res => res.json())
+        .then(handlePasscode)
+        .catch(err => {
+          console.error(err);
+          document.getElementById('passcode-error').textContent = "There was an error. Please try again.";
+        });
+      }
+      function submitRSVP(e) {
+        e.preventDefault();
+        const responses = guests.map((guest, idx) => {
+          const rsvp = document.querySelector(`[name="rsvp-${idx}"]:checked`);
+          const diet = document.querySelector(`[name="diet-${idx}"]`).value.trim();
+          return {
+            name: guest,
+            rsvp: rsvp ? rsvp.value : '',
+            diet: diet
+          };
+        });
+        const formData = {
+          passcode: currentPasscode,
+          responses: responses
+        };
+        document.getElementById('loading-message-rsvp').textContent = "Please wait...";
+        fetch(SCRIPT_URL + "?action=submitRSVP", {
+          method: 'POST',
+          body: JSON.stringify(formData),
+          headers: { "Content-Type": "application/json" }
+        })
+        .then(res => res.json())
+        .then(result => {
+          if (result.success) {
+            document.body.innerHTML = `
+              <div class="container">
+                <h2>Thank You! 🎉</h2>
+                <p>Your RSVP has been recorded. We can’t wait to celebrate with you!</p>
+                <p><a href="https://www.google.com">Click here for more information</a></p>
+              </div>`;
+          } else {
+            alert("Error: " + result.message);
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          alert("There was an error submitting your RSVP. Please try again.");
+        });
+      }
+    </script>
+  </body>
+</html>
