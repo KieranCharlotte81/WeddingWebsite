@@ -128,122 +128,125 @@
       </form>
     </div>
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz6wWTArQPYZ7MWKK31SrzOTGU-t9wdF8UHfRIcFP6QH2CRxCiAN6ePsEWNV7Itep-_Vw/exec";
+  window.onload = function () {
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz6wWTArQPYZ7MWKK31SrzOTGU-t9wdF8UHfRIcFP6QH2CRxCiAN6ePsEWNV7Itep-_Vw/exec";
 
-  let currentPasscode = "";
-  let guests = [];
+    let currentPasscode = "";
+    let guests = [];
 
-  function checkPasscode() {
-    const passcode = document.getElementById('passcode').value.trim();
-    document.getElementById('passcode-error').textContent = "";
-    document.getElementById('loading-message-passcode').textContent = "";
+    window.checkPasscode = function () {
+      const passcode = document.getElementById('passcode').value.trim();
+      document.getElementById('passcode-error').textContent = "";
+      document.getElementById('loading-message-passcode').textContent = "";
 
-    if (!passcode) {
-      document.getElementById('passcode-error').textContent = "Please enter a passcode.";
-      return;
+      if (!passcode) {
+        document.getElementById('passcode-error').textContent = "Please enter a passcode.";
+        return;
+      }
+
+      document.getElementById('loading-message-passcode').textContent = "Please wait...";
+
+      fetch(`${SCRIPT_URL}?action=validatePasscode&passcode=${encodeURIComponent(passcode)}`)
+        .then(res => res.json())
+        .then(handlePasscode)
+        .catch(err => {
+          console.error(err);
+          document.getElementById('loading-message-passcode').textContent = "";
+          document.getElementById('passcode-error').textContent = "There was an error. Please try again.";
+        });
     }
 
-    document.getElementById('loading-message-passcode').textContent = "Please wait...";
+    function handlePasscode(data) {
+      document.getElementById('loading-message-passcode').textContent = "";
 
-    fetch(`${SCRIPT_URL}?action=validatePasscode&passcode=${encodeURIComponent(passcode)}`)
-      .then(res => res.json())
-      .then(handlePasscode)
-      .catch(err => {
-        console.error(err);
-        document.getElementById('loading-message-passcode').textContent = "";
-        document.getElementById('passcode-error').textContent = "There was an error. Please try again.";
-      });
-  }
+      if (!data.valid) {
+        document.getElementById('passcode-error').textContent = data.message || "Invalid passcode.";
+        return;
+      }
 
-  function handlePasscode(data) {
-    document.getElementById('loading-message-passcode').textContent = "";
+      currentPasscode = document.getElementById('passcode').value.trim();
+      guests = data.guests || [];
 
-    if (!data.valid) {
-      document.getElementById('passcode-error').textContent = data.message || "Invalid passcode.";
-      return;
-    }
+      document.getElementById('passcode-section').style.display = 'none';
+      document.getElementById('rsvp-form').style.display = 'block';
 
-    currentPasscode = document.getElementById('passcode').value.trim();
-    guests = data.guests || [];
+      const guestForms = document.getElementById('guest-forms');
+      guestForms.innerHTML = "";
 
-    document.getElementById('passcode-section').style.display = 'none';
-    document.getElementById('rsvp-form').style.display = 'block';
+      guests.forEach((guest, idx) => {
+        const formBlock = document.createElement('div');
+        formBlock.className = 'guest-form';
 
-    const guestForms = document.getElementById('guest-forms');
-    guestForms.innerHTML = "";
-
-    guests.forEach((guest, idx) => {
-      const formBlock = document.createElement('div');
-      formBlock.className = 'guest-form';
-
-      formBlock.innerHTML = `
-        <div class="guest-header">${guest}</div>
-        <div class="response-row">
-          <div class="radio-group">
-            <label>
-              <input type="radio" name="rsvp-${idx}" value="Accepts" required> Accepts
-            </label>
-            <label>
-              <input type="radio" name="rsvp-${idx}" value="Declines"> Declines
-            </label>
+        formBlock.innerHTML = `
+          <div class="guest-header">${guest}</div>
+          <div class="response-row">
+            <div class="radio-group">
+              <label>
+                <input type="radio" name="rsvp-${idx}" value="Accepts" required> Accepts
+              </label>
+              <label>
+                <input type="radio" name="rsvp-${idx}" value="Declines"> Declines
+              </label>
+            </div>
+            <input class="dietary" name="diet-${idx}" type="text" placeholder="Dietary requirements">
           </div>
-          <input class="dietary" name="diet-${idx}" type="text" placeholder="Dietary requirements">
-        </div>
-      `;
+        `;
 
-      guestForms.appendChild(formBlock);
-    });
-
-    document.getElementById('arrival-message').textContent = `Welcome, ${guests.join(" & ")} (${data.guestType})`;
-  }
-
-  function submitRSVP(e) {
-    e.preventDefault();
-
-    const responses = guests.map((guest, idx) => {
-      const rsvp = document.querySelector(`[name="rsvp-${idx}"]:checked`);
-      const diet = document.querySelector(`[name="diet-${idx}"]`).value.trim();
-      return {
-        name: guest,
-        rsvp: rsvp ? rsvp.value : '',
-        diet: diet
-      };
-    });
-
-    const formData = {
-      passcode: currentPasscode,
-      responses: responses
-    };
-
-    document.getElementById('loading-message-rsvp').textContent = "Please wait...";
-
-    fetch(SCRIPT_URL + "?action=submitRSVP", {
-      method: 'POST',
-      body: JSON.stringify(formData),
-      headers: { "Content-Type": "application/json" }
-    })
-      .then(res => res.json())
-      .then(result => {
-        document.getElementById('loading-message-rsvp').textContent = "";
-
-        if (result.success) {
-          document.body.innerHTML = `
-            <div class="container">
-              <h2>Thank You! 🎉</h2>
-              <p>Your RSVP has been recorded. We can’t wait to celebrate with you!</p>
-              <p><a href="https://www.google.com">Click here for more information</a></p>
-            </div>`;
-        } else {
-          alert("Error: " + result.message);
-        }
-      })
-      .catch(err => {
-        document.getElementById('loading-message-rsvp').textContent = "";
-        console.error(err);
-        alert("There was an error submitting your RSVP. Please try again.");
+        guestForms.appendChild(formBlock);
       });
-  }
+
+      document.getElementById('arrival-message').textContent = `Welcome, ${guests.join(" & ")} (${data.guestType})`;
+    }
+
+    window.submitRSVP = function (e) {
+      e.preventDefault();
+
+      const responses = guests.map((guest, idx) => {
+        const rsvp = document.querySelector(`[name="rsvp-${idx}"]:checked`);
+        const diet = document.querySelector(`[name="diet-${idx}"]`).value.trim();
+        return {
+          name: guest,
+          rsvp: rsvp ? rsvp.value : '',
+          diet: diet
+        };
+      });
+
+      const formData = {
+        passcode: currentPasscode,
+        responses: responses
+      };
+
+      document.getElementById('loading-message-rsvp').textContent = "Please wait...";
+
+      fetch(SCRIPT_URL + "?action=submitRSVP", {
+        method: 'POST',
+        body: JSON.stringify(formData),
+        headers: { "Content-Type": "application/json" }
+      })
+        .then(res => res.json())
+        .then(result => {
+          document.getElementById('loading-message-rsvp').textContent = "";
+
+          if (result.success) {
+            document.body.innerHTML = `
+              <div class="container">
+                <h2>Thank You! 🎉</h2>
+                <p>Your RSVP has been recorded. We can’t wait to celebrate with you!</p>
+                <p><a href="https://www.google.com">Click here for more information</a></p>
+              </div>`;
+          } else {
+            alert("Error: " + result.message);
+          }
+        })
+        .catch(err => {
+          document.getElementById('loading-message-rsvp').textContent = "";
+          console.error(err);
+          alert("There was an error submitting your RSVP. Please try again.");
+        });
+    }
+  };
 </script>
+
 
   </body>
 </html>
