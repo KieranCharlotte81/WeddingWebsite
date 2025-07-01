@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Allura&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Allura&family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
-    
+
     <link rel="apple-touch-icon" sizes="57x57" href="/Favicons/apple-icon-57x57.png">
     <link rel="apple-touch-icon" sizes="60x60" href="/Favicons/apple-icon-60x60.png">
     <link rel="apple-touch-icon" sizes="72x72" href="/Favicons/apple-icon-72x72.png">
@@ -26,7 +26,7 @@
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="msapplication-TileImage" content="/Favicons/ms-icon-144x144.png">
     <meta name="theme-color" content="#ffffff">
-    
+
     <style>
       body {
         font-family: 'EB Garamond', serif;
@@ -147,7 +147,6 @@
       </form>
     </div>
 
-    <!-- Everything before remains unchanged -->
 <script>
   window.onload = function () {
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz6wWTArQPYZ7MWKK31SrzOTGU-t9wdF8UHfRIcFP6QH2CRxCiAN6ePsEWNV7Itep-_Vw/exec";
@@ -216,7 +215,15 @@
         guestForms.appendChild(formBlock);
       });
 
-      document.getElementById('arrival-message').textContent = `Welcome, ${guests.join(" & ")} (${data.guestType})`;
+      // UPDATED ARRIVAL MESSAGE
+      const messageEl = document.getElementById('arrival-message');
+      if (data.guestType === "All Day") {
+        messageEl.textContent = `Welcome ${guests.join(" & ")}, please join us for our wedding day. The ceremony will start at 2pm.`;
+      } else if (data.guestType === "Evening") {
+        messageEl.textContent = `Welcome ${guests.join(" & ")}, please join us for our wedding reception. Please arrive for 7pm for the cake cutting and first dance.`;
+      } else {
+        messageEl.textContent = `Welcome ${guests.join(" & ")}`;
+      }
     }
 
     window.submitRSVP = function (e) {
@@ -241,13 +248,12 @@
         responses: responses
       };
 
-      // Fix: send action and payload as URL-encoded to support e.parameter.action in Apps Script
       const body = `action=submitRSVP&payload=${encodeURIComponent(JSON.stringify(payload))}`;
 
       fetch(SCRIPT_URL, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded' // ✅ CORS-friendly and Apps Script compatible
+          'Content-Type': 'application/x-www-form-urlencoded'
         },
         body: body
       })
