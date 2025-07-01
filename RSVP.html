@@ -218,9 +218,9 @@
       // UPDATED ARRIVAL MESSAGE
       const messageEl = document.getElementById('arrival-message');
       if (data.guestType === "All Day") {
-        document.getElementById('arrival-message').innerHTML = `Welcome ${guests.join(" & ")}.<br>Please join us for our wedding day.<br>Please arrive by 1:30pm for the ceremony to start at 2pm.`;
+        document.getElementById('arrival-message').innerHTML = `Welcome ${guests.join(" & ")}.<br>Join us for our wedding day.<br>Please arrive by 1:30pm for the ceremony to start at 2pm.`;
       } else if (data.guestType === "Evening") {
-        document.getElementById('arrival-message').innerHTML = `Welcome ${guests.join(" & ")}.<br>Please join us for our wedding reception.<br>Please arrive for 7pm for the cake cutting and first dance.`;
+        document.getElementById('arrival-message').innerHTML = `Welcome ${guests.join(" & ")}.<br>Join us for our wedding reception.<br>Please arrive for 7pm for the cake cutting and first dance.`;
       } else {
         document.getElementById('arrival-message').innerHTML = `Welcome ${guests.join(" & ")}`;
       }
