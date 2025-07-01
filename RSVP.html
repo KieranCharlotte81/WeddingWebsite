@@ -137,17 +137,14 @@
           return;
         }
         document.getElementById('loading-message-passcode').textContent = "Please wait...";
-        fetch(SCRIPT_URL + "?action=validatePasscode", {
-          method: 'POST',
-          body: JSON.stringify({ passcode: passcode }),
-          headers: { "Content-Type": "application/json" }
-        })
-        .then(res => res.json())
-        .then(handlePasscode)
-        .catch(err => {
-          console.error(err);
-          document.getElementById('passcode-error').textContent = "There was an error. Please try again.";
-        });
+
+        fetch(`${SCRIPT_URL}?action=validatePasscode&passcode=${encodeURIComponent(passcode)}`)
+            .then(res => res.json())
+            .then(handlePasscode)
+            .catch(err => {
+              console.error(err);
+              document.getElementById('passcode-error').textContent = "There was an error. Please try again.";
+            });
       }
       function submitRSVP(e) {
         e.preventDefault();
