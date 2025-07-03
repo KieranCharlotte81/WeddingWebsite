@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Allura&family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/Favicons/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/Favicons/favicon-32x32.png">
+    <link rel="manifest" href="/Favicons/manifest.json">
+    <meta name="theme-color" content="#ffffff">
+
+    <title>K & C Wedding | RSVP</title>
+    
+    <style>
+      body {
+        font-family: 'EB Garamond', serif;
+        background-image: url("https://i.imgur.com/Agfpf4Z.jpeg");
+        background-size: 1000px auto;
+        background-repeat: repeat;
+        background-color: #f8f9fa;
+        padding: 30px;
+        color: #333;
+        text-align: center;
+      }
+      #arrival-message {
+        font-size: 18px;
+        color: #555;
+        margin-top: 10px;
+        margin-bottom: 20px;
+      }
+      .container {
+        background: rgba(255, 255, 255);
+        opacity: 0.8;
+        max-width: 700px;
+        margin: auto;
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      }
+      label {
+        font-weight: 500;
+        display: block;
+        margin-bottom: 6px;
+      }
+      input[type="text"],
+      input[type="radio"] {
+        margin-right: 10px;
+      }
+      button {
+        background-color: #97af8e;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+        margin-top: 20px;
+      }
+      button:hover {
+        background-color: #a1c488;
+      }
+      .guest-form {
+        background-color: #f1f3f5;
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #dfe2e6;
+      }
+      .guest-header {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      .response-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 15px;
+      }
+      .radio-group {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      .diet-input {
+        flex: 1;
+        min-width: 200px;
+      }
+      input[type="text"].dietary {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        box-sizing: border-box;
+        font-size: 14px;
+      }
+      #passcode-error {
+        color: #d9534f;
+        font-weight: 500;
+        margin-top: 10px;
+      }
+      @media screen and (max-width: 600px) {
+        .response-row {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-sm bg-light">
+      <div class="container-fluid">
+        <!-- Links -->
+        <a class="navbar-brand" href="#">
+          <img src="KCLogo.png" alt="Logo" style="width:40px;" class="rounded-pill"> Kieran & Charlotte's Wedding
+        </a>
+
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="kierancharlotte2026.co.uk">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">About Us</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Wedding Info</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="kierancharlotte2026.co.uk/RSVP">RSVP</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link disabled" href="#">Photos</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    
+    <br>
+
+    <div class="container">
+      <p style="font-size: 50px; font-family: 'Allura', serif; margin-bottom: 10px">You're Invited! 🎉</p>
+      <p style="font-size: 25px">RSVP for Kieran and Charlotte's Wedding!</p>
+      <p style="font-size: 20px"><i>Fairlawns Hotel & Spa - Friday 22nd May 2026</i></p>
+      <p id="arrival-message"></p>
+
+      <div id="passcode-section">
+        <label for="passcode">Enter your invite passcode:</label>
+        <input type="text" id="passcode" placeholder="e.g., 1234" required>
+        <button onclick="checkPasscode()">Continue</button>
+        <p id="passcode-error"></p>
+        <p id="loading-message-passcode" style="color: #555; font-style: italic;"></p>
+      </div>
+
+      <form id="rsvp-form" style="display:none;" onsubmit="submitRSVP(event)">
+        <div id="guest-forms"></div>
+        <button id="submit-button" type="submit">Submit RSVP</button>
+        <p id="loading-message-rsvp" style="color: #555; font-style: italic;"></p>
+      </form>
+    </div>
+
+<script>
+  window.onload = function () {
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz6wWTArQPYZ7MWKK31SrzOTGU-t9wdF8UHfRIcFP6QH2CRxCiAN6ePsEWNV7Itep-_Vw/exec";
+
+    let currentPasscode = "";
+    let guests = [];
+
+    window.checkPasscode = function () {
+      const passcode = document.getElementById('passcode').value.trim();
+      document.getElementById('passcode-error').textContent = "";
+      document.getElementById('loading-message-passcode').textContent = "";
+
+      if (!passcode) {
+        document.getElementById('passcode-error').textContent = "Please enter a passcode.";
+        return;
+      }
+
+      document.getElementById('loading-message-passcode').textContent = "Please wait...";
+
+      fetch(`${SCRIPT_URL}?action=validatePasscode&passcode=${encodeURIComponent(passcode)}`)
+        .then(res => res.json())
+        .then(handlePasscode)
+        .catch(err => {
+          console.error(err);
+          document.getElementById('loading-message-passcode').textContent = "";
+          document.getElementById('passcode-error').textContent = "There was an error. Please try again.";
+        });
+    }
+
+    function handlePasscode(data) {
+      document.getElementById('loading-message-passcode').textContent = "";
+
+      if (!data.valid) {
+        document.getElementById('passcode-error').textContent = data.message || "Invalid passcode.";
+        return;
+      }
+
+      currentPasscode = document.getElementById('passcode').value.trim();
+      guests = data.guests || [];
+
+      document.getElementById('passcode-section').style.display = 'none';
+      document.getElementById('rsvp-form').style.display = 'block';
+
+      const guestForms = document.getElementById('guest-forms');
+      guestForms.innerHTML = "";
+
+      guests.forEach((guest, idx) => {
+        const formBlock = document.createElement('div');
+        formBlock.className = 'guest-form';
+
+        formBlock.innerHTML = `
+          <div class="guest-header">${guest}</div>
+          <div class="response-row">
+            <div class="radio-group">
+              <label>
+                <input type="radio" name="rsvp-${idx}" value="Accepts" required> Accepts
+              </label>
+              <label>
+                <input type="radio" name="rsvp-${idx}" value="Declines"> Declines
+              </label>
+            </div>
+            <input class="dietary" name="diet-${idx}" type="text" placeholder="Dietary requirements">
+          </div>
+        `;
+
+        guestForms.appendChild(formBlock);
+      });
+
+      // UPDATED ARRIVAL MESSAGE
+      const messageEl = document.getElementById('arrival-message');
+      if (data.guestType === "All Day") {
+        document.getElementById('arrival-message').innerHTML = `Welcome ${guests.join(" & ")}.<br>Join us for our wedding day.<br>Please arrive by 1:30pm for the ceremony to start at 2pm.`;
+      } else if (data.guestType === "Evening") {
+        document.getElementById('arrival-message').innerHTML = `Welcome ${guests.join(" & ")}.<br>Join us for our wedding reception.<br>Please arrive for 7pm for the cake cutting and first dance.`;
+      } else {
+        document.getElementById('arrival-message').innerHTML = `Welcome ${guests.join(" & ")}`;
+      }
+
+    }
+
+    window.submitRSVP = function (e) {
+      e.preventDefault();
+
+      const submitBtn = document.getElementById('submit-button');
+      submitBtn.disabled = true;
+      document.getElementById('loading-message-rsvp').textContent = "Please wait...";
+
+      const responses = guests.map((guest, idx) => {
+        const rsvp = document.querySelector(`[name="rsvp-${idx}"]:checked`);
+        const diet = document.querySelector(`[name="diet-${idx}"]`).value.trim();
+        return {
+          name: guest,
+          rsvp: rsvp ? rsvp.value : '',
+          diet: diet
+        };
+      });
+
+      const payload = {
+        passcode: currentPasscode,
+        responses: responses
+      };
+
+      const body = `action=submitRSVP&payload=${encodeURIComponent(JSON.stringify(payload))}`;
+
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: body
+      })
+        .then(res => res.json())
+        .then(result => {
+          submitBtn.disabled = false;
+          document.getElementById('loading-message-rsvp').textContent = "";
+
+          if (result.success) {
+            document.body.innerHTML = `
+              <div class="container">
+                <h2>Thank You! 🎉</h2>
+                <p>Your RSVP has been recorded. We can’t wait to celebrate with you!</p>
+                <p><a href="https://www.google.com">Click here for more information</a></p>
+              </div>`;
+          } else {
+            alert("Error: " + result.message);
+          }
+        })
+        .catch(err => {
+          submitBtn.disabled = false;
+          document.getElementById('loading-message-rsvp').textContent = "";
+          console.error(err);
+          alert("There was an error submitting your RSVP. Please try again.");
+        });
+    }
+  };
+</script>
+
+  </body>
+</html>
